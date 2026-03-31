@@ -98,6 +98,42 @@ def load_cifar100_sub(args, data_mask, sorted_score):
     test_transform = transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize(mean, std)
+
+def load_mnist_sub(args, data_mask, sorted_score):
+    # 1. Calculate how many samples to keep based on the subset_rate
+    num_samples = int(60000 * args.subset_rate)
+    
+    # 2. Extract the indices to keep. 
+    # (Check how load_cifar10_sub does this in the original code, 
+    # but it usually takes the top 'num_samples' from sorted_score)
+    keep_indices = sorted_score[:num_samples] 
+    
+    # 3. Apply the 3-channel, 32x32 transformations
+    transform_train = transforms.Compose([
+        transforms.Resize((32, 32)),
+        transforms.Grayscale(num_output_channels=3),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=(0.1307, 0.1307, 0.1307), std=(0.3081, 0.3081, 0.3081)),
+    ])
+
+    transform_test = transforms.Compose([
+        transforms.Resize((32, 32)),
+        transforms.Grayscale(num_output_channels=3),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=(0.1307, 0.1307, 0.1307), std=(0.3081, 0.3081, 0.3081)),
+    ])
+
+    # 4. Instantiate the custom Subset dataset
+    train_dataset = SubsetMNIST(root=args.data_path, indices=keep_indices, train=True, download=True, transform=transform_train)
+    
+    # The test set remains the full 10,000 images, so we use the standard MNIST class
+    test_dataset = datasets.MNIST(root=args.data_path, train=False, download=True, transform=transform_test)
+
+    # 5. Create DataLoaders
+    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.workers, pin_memory=True)
+    test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.workers, pin_memory=True)
+
+    return train_loader, test_loader
     ])
 
     test_data = dset.CIFAR100(args.data_path, train=False, transform=test_transform, download=True)
