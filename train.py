@@ -167,7 +167,7 @@ def train(train_loader, args, model, criterion, optimizer, scheduler, epoch, log
     model.train()
     end = time.time()
     
-    for t, (input, target) in enumerate(train_loader):
+    for t, batch_data in enumerate(train_loader):
         if len(batch_data) == 3:
             input, target, index = batch_data
         else:
