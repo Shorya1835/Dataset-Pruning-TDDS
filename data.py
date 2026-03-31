@@ -71,6 +71,8 @@ def load_dataset(args):
     
         train_dataset = IndexedMNIST(root=args.data_path, train=True, download=True, transform=transform_train)
         test_dataset = datasets.MNIST(root=args.data_path, train=False, download=True, transform=transform_test)
+        train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.workers, pin_memory=True)
+        test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.workers, pin_memory=True)
     else:
         raise NotImplementedError("Dataset not supported: {}".format(args.dataset))
     return train_loader, test_loader
