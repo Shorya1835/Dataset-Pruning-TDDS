@@ -6,7 +6,7 @@ from utils import AverageMeter, RecorderMeter, time_string, convert_secs2time
 from models import resnet
 import numpy as np
 import math
-from data_subset import load_cifar100_sub, load_cifar10_sub
+from data_subset import load_cifar100_sub, load_cifar10_sub, load_mnist_sub
 ########################################################################################################################
 #  Training Subset
 ########################################################################################################################
@@ -14,7 +14,7 @@ from data_subset import load_cifar100_sub, load_cifar10_sub
 parser = argparse.ArgumentParser(description='Trains ResNet on CIFAR',
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('--data_path', type=str, default='./data', help='Path to dataset')
-parser.add_argument('--dataset', type=str, default='cifar100',choices=['cifar10', 'cifar100'],
+parser.add_argument('--dataset', type=str, default='cifar100',choices=['cifar10', 'cifar100','mnist'],
                     help='Choose between Cifar10 and 100.')
 parser.add_argument('--arch', type=str, default='resnet18')
 # Optimization options
@@ -87,6 +87,11 @@ def main():
         args.num_samples = 50000*(1-args.subset_rate)
         args.num_iter = math.ceil(args.num_samples/args.batch_size)
         train_loader, test_loader = load_cifar100_sub(args, data_mask, sorted_score)
+    elif args.dataset == 'mnist':
+      args.num_classes = 10
+      args.num_samples = 60000*(1-args.subset_rate)
+      args.num_iter = math.ceil(args.num_samples / args.batch_size)
+      train_loader, test_loader = load_mnist_sub(args, data_mask, sorted_score)
     else:
         raise NotImplementedError("Unsupported dataset type")
     print_log("=> creating model '{}'".format(args.arch), log)
