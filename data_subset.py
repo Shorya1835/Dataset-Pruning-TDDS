@@ -9,6 +9,20 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.parameter import Parameter
 
+class SubsetMNIST(datasets.MNIST):
+    def __init__(self, root, indices, train=True, transform=None, target_transform=None, download=False):
+        super().__init__(root, train=train, transform=transform, target_transform=target_transform, download=download)
+        # Subset the data and targets based on the TDDS mask indices
+        self.data = self.data[indices]
+        self.targets = self.targets[indices]
+        
+    def __getitem__(self, index):
+        img, target = self.data[index], int(self.targets[index])
+        img = Image.fromarray(img.numpy(), mode='L')
+        if self.transform is not None:
+            img = self.transform(img)
+        return img, target
+
 ########################################################################################################################
 #  Load Data
 ########################################################################################################################
