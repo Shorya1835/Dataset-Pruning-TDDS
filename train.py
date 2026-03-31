@@ -168,6 +168,10 @@ def train(train_loader, args, model, criterion, optimizer, scheduler, epoch, log
     end = time.time()
     
     for t, (input, target) in enumerate(train_loader):
+        if len(batch_data) == 3:
+            input, target, index = batch_data
+        else:
+            input, target = batch_data
         if args.use_cuda:
             y = target[0].cuda()
             x = input.cuda()
