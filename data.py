@@ -5,6 +5,23 @@ import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 from PIL import Image
 
+class IndexedMNIST(datasets.MNIST):
+    def __getitem__(self, index):
+        # Extract image and target
+        img, target = self.data[index], int(self.targets[index])
+        
+        # Convert to PIL Image for torchvision transforms
+        img = Image.fromarray(img.numpy(), mode='L')
+
+        if self.transform is not None:
+            img = self.transform(img)
+
+        if self.target_transform is not None:
+            target = self.target_transform(target)
+
+        # THE CRITICAL FIX: Return target and index bundled as a tuple
+        return img, (target, index)
+
 
 ########################################################################################################################
 # Load Data
@@ -50,7 +67,7 @@ def load_dataset(args):
             transforms.Normalize(mean=(0.1307, 0.1307, 0.1307), std=(0.3081, 0.3081, 0.3081)),
         ])
     
-        train_dataset = datasets.MNIST(root=args.data_path, train=True, download=True, transform=transform_train)
+        train_dataset = IndexedMNIST(root=args.data_path, train=True, download=True, transform=transform_train)
         test_dataset = datasets.MNIST(root=args.data_path, train=False, download=True, transform=transform_test)
         train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.workers, pin_memory=True)
         test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.workers, pin_memory=True)
